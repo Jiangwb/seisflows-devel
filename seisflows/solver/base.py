@@ -93,6 +93,8 @@ class base(object):
         if 'SOLVERIO' not in PAR:
             setattr(PAR, 'SOLVERIO', 'fortran_binary')
 
+        if 'USER_DEFINE_STATION' not in PAR:
+            setattr(PAR, 'USER_DEFINE_STATION', 'no')
 
         # solver scratch paths
         if 'SCRATCH' not in PATH:
@@ -488,10 +490,20 @@ class base(object):
         src = glob(PATH.SPECFEM_DATA +'/'+ '*')
         dst = 'DATA/'
         unix.cp(src, dst)
-
+		
+		# copy SOURCE_sourcename to SOURCE for each shot
         src = 'DATA/' + self.source_prefix +'_'+ self.source_name
         dst = 'DATA/' + self.source_prefix
         unix.cp(src, dst)
+		
+		# Jiang change: copy STATIONS_sourcename to STATIONS for each shot
+        if PAR.USER_DEFINE_STATION == 'yes':
+            src = 'DATA/' + 'STATIONS' +'_'+ self.source_name
+            dst = 'DATA/' + 'STATIONS'
+            #print('start copy STATION files')
+            #print(src)
+            #print(dst)
+            unix.cp(src, dst)
 
         self.check_solver_parameter_files()
 

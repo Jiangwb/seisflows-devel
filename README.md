@@ -24,3 +24,5 @@ Unsolved problem:
 1. Use GPU version SPECFEM2D in SeisFlows
 2. Tikhonov regularization
 
+Need to do:
+1. How to convert real data to SU format that SeisFlows can use.

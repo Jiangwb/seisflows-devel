@@ -1,0 +1,2 @@
+python calculate_model_misfit.py to get vp,vs,rho misfit
+run matlab script to plot figure

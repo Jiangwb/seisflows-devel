@@ -25,4 +25,6 @@ Unsolved problem:
 2. Tikhonov regularization
 
 Need to do:
-1. How to convert real data to SU format that SeisFlows can use.
+1. Convert real data (SAC or SEGY) to SU format that SeisFlows can use.
+	step 1 -- convert segy data to SU format
+	step 2 -- read geometry information from segy data and save it to SOURCE and STATIONS file

@@ -44,13 +44,15 @@ class tikhonov1(custom_import('postprocess', 'regularize')):
     def nabla(self, mesh, m, g):
         if PAR.CREEPING:
             G, grid = mesh2grid(g, mesh)
-            DG = nabla(G, order=1)
+            #DG = nabla(G, order=1)
+            DG = nabla(G, h=[])
             dg = grid2mesh(DG, grid, mesh)
             return -dg/np.mean(m)
 
         else:
             M, grid = mesh2grid(m, mesh)
-            DM = nabla(M, order=1)
+            #DM = nabla(M, order=1)
+            DM = nabla(M, h=[])
             dm = grid2mesh(DM, grid, mesh)
             return dm/np.mean(m)
 

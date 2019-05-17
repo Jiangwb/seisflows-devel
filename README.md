@@ -8,7 +8,7 @@ Envelope, avoid divide zero when mute near-offset data.
 
 2. ./seisflows/tools/signal.py
 ./seisflows/preprocess/base.py
-Apply tapered mask to shot gather, muting body waves and later waves to preserve surface wave.
+Apply tapered mask to shot gather, muting body waves and later waves to preserve surface wave only.
 
 3. ./seisflows/workflow/migration.py
 ./seisflows/solver/base.py
@@ -19,4 +19,8 @@ Allow to use different STATION file for different SOURCE. The naming rule must b
 Add a new parameter 'PAR.USER_DEFINE_STATION' to control this feature. Remember to set use_existing_STATIONS=.true. when you use this option. 
 You can ignore 'PAR.USER_DEFINE_STATION' if you use a fixed receiver array in synthetic test. This fixed receiver array can be define either by STATIONS file under specfem2d-master/DATA or parameters in Par_file.
 
+
+Unsolved problem:
+1. Use GPU version SPECFEM2D in SeisFlows
+2. Tikhonov regularization
 

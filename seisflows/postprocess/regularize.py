@@ -1,6 +1,8 @@
 
 import sys
 import numpy as np
+from os.path import basename, join
+from glob import glob
 
 from seisflows.tools import unix
 from seisflows.tools.array import loadnpy, savenpy
@@ -68,15 +70,21 @@ class regularize(custom_import('postprocess', 'base')):
         if exists(fullpath +'/'+ 'sum'):
             unix.mv(fullpath +'/'+ 'sum', fullpath +'/'+ 'sum_nofix')
 
+        #print('==========path==========')
+        #print(path)
         # mask sources and receivers
         system.run('postprocess', 'fix_near_field', 
-                   hosts='all', 
-                   path=fullpath)
+                   #hosts='all', 
+                   #path=fullpath)
+                   path=path)
+        print('==========fix_near_field end1==========')
 
         system.run('solver', 'combine',
-                   hosts='head',
-                   path=fullpath,
+                   #hosts='head',
+                   input_path=path,
+                   output_path=path+'/'+'sum',
                    parameters=parameters)
+        print('==========combine end==========')
 
 
     def fix_near_field(self, path=''):
@@ -90,12 +98,20 @@ class regularize(custom_import('postprocess', 'base')):
         ########### Jiang change end #############
         preprocess.setup()
 
-        name = solver.check_source_names()[solver.taskid]
+        #name = solver.check_source_names()[solver.taskid]
+        name = self.get_source_names()[solver.taskid]
+        print('==========name==========')
+        print(name)
+        print('==========path==========')
+        print(path)
         fullpath = path +'/'+ name
+        print('==========fullpath==========')
+        print(fullpath)
         g = solver.load(fullpath, suffix='_kernel')
         if not PAR.FIXRADIUS:
             return
 
+        print('==========load end==========')
         mesh = self.getmesh()
         x,z = self.getxz()
 
@@ -109,13 +125,16 @@ class regularize(custom_import('postprocess', 'base')):
 
         sigma = 0.5*PAR.FIXRADIUS*(dx+dz)
 
+        print('==========stage 1==========')
         sx, sy, sz = preprocess.get_source_coords(
             preprocess.reader(
                 solver.cwd+'/'+'traces/obs', solver.data_filenames[0]))
+        print('==========stage 2==========')
 
         rx, ry, rz = preprocess.get_receiver_coords(
             preprocess.reader(
                 solver.cwd+'/'+'traces/obs', solver.data_filenames[0]))
+        print('==========stage 3==========')
 
         # mask sources
         mask = np.exp(-0.5*((x-sx[0])**2.+(z-sy[0])**2.)/sigma**2.)
@@ -123,16 +142,19 @@ class regularize(custom_import('postprocess', 'base')):
             weight = np.sum(mask*g[key][0])/np.sum(mask)
             g[key][0] *= 1.-mask
             g[key][0] += mask*weight
+        print('==========stage 4==========')
 
-        # mask receivers
-        for ir in range(PAR.NREC):
-            mask = np.exp(-0.5*((x-rx[ir])**2.+(z-ry[ir])**2.)/sigma**2.)
-            for key in solver.parameters:
-                weight = np.sum(mask*g[key][0])/np.sum(mask)
-                g[key][0] *= 1.-mask
-                g[key][0] += mask*weight
+        ## It is dangerous to mask receivers because the number of receiver may not be a fix number
+		## mask receivers
+        #for ir in range(PAR.NREC):
+        #    mask = np.exp(-0.5*((x-rx[ir])**2.+(z-ry[ir])**2.)/sigma**2.)
+        #    for key in solver.parameters:
+        #        weight = np.sum(mask*g[key][0])/np.sum(mask)
+        #        g[key][0] *= 1.-mask
+        #        g[key][0] += mask*weight
 
         solver.save(fullpath, g, suffix='_kernel')
+        print('==========fix_near_field end==========')
 
 
     def nabla(self, mesh, m, g):
@@ -165,5 +187,30 @@ class regularize(custom_import('postprocess', 'base')):
             x = read(model_path, 'x', 0)
             z = read(model_path, 'z', 0)
         return x,z
+
+    def get_source_names(self):
+        """ Determines names of sources by applying wildcard rule to user-
+            supplied input files
+        """
+        path = PATH.SPECFEM_DATA
+        if not exists(path):
+            raise Exception
+
+        # apply wildcard rule
+        wildcard = self.source_prefix+'_*'
+        globstar = sorted(glob(path +'/'+ wildcard))
+        if not globstar:
+             print msg.SourceError_SPECFEM % (path, wildcard)
+             sys.exit(-1)
+
+        names = []
+        for path in globstar:
+            names += [basename(path).split('_')[-1]]
+        source_names = names[:PAR.NTASK]
+        return source_names
+
+    @property
+    def source_prefix(self):
+        return 'SOURCE'
 
 

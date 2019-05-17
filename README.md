@@ -1,4 +1,3 @@
-# SeisFlows-devel
 Add new functions to SeisFlows
 
 1. ./seisflows/plugins/adjoint.py 

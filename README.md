@@ -1,3 +1,6 @@
+SeisFlows is a open source FWI package developed by Ryan Modrak.
+For more information, please refer to https://seisflows.readthedocs.io/en/latest/
+
 Add new functions to SeisFlows
 
 1. ./seisflows/plugins/adjoint.py 

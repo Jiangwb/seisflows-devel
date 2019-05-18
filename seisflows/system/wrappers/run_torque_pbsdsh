@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+def export(myenv):
+    # exports comma delimited list of environment variables
+    # e.g. VARNAME1=value1,VARNAME2=value2
+    for item in myenv.split(','):
+	for subitem in item.split('=')[1].split(':'):
+	    if subitem != '':
+		sys.path.insert(0,subitem)
+
+
+if __name__ == '__main__':
+    """ Runs task within currently executing workflow
+    """
+    print sys.argv
+
+    # parse command line arguments
+    mypath = sys.argv[1]
+    myclass = sys.argv[2]
+    myfunc = sys.argv[3]
+
+    print 'Check arguments'
+    print mypath
+    print myclass
+    print myfunc
+    print 'Environments before export'
+    del sys.path[1:]
+    print sys.path
+    print len(sys.argv)
+
+    if len(sys.argv[1:])==4:
+    	export(sys.argv[4])
+
+    print 'Environments after export'
+    print sys.path
+
+    from os.path import join
+    from seisflows.tools.tools import loadjson, loadobj
+    from seisflows.config import load
+    
+
+    # reload from last checkpoint
+    load(mypath)
+
+    # load function arguments
+    kwargspath = join(mypath, 'kwargs')
+    kwargs = loadobj(join(kwargspath, myclass+'_'+myfunc + '.p'))
+
+    # call function
+    func = getattr(sys.modules['seisflows_'+myclass], myfunc)
+    func(**kwargs)
+

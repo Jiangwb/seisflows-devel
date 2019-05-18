@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os
+import sys
+#sys.path.append('/home/luan/miniconda2/bin')
+import argparse
+
+def export(myenv):
+    # exports comma delimited list of environment variables
+    # e.g. VARNAME1=value1,VARNAME2=value2
+    for item in myenv.split(','):
+	print item.split('=')
+        #os.environ.update([item.split('=')])
+	for subitem in item.split('=')[1].split(':'):
+	    print subitem
+	    sys.path.append(subitem)
+
+
+if __name__ == '__main__':
+    """ Runs task within currently executing workflow
+    """
+    print sys.argv
+
+    # parse command line arguments
+    mypath = sys.argv[1]
+    myclass = sys.argv[2]
+    myfunc = sys.argv[3]
+    myenv = sys.argv[4]
+
+    print 'Check arguments'
+    print mypath
+    print myclass
+    print myfunc
+    print myenv
+
+
+    #pythonpath = sys.argv[4]
+    #sys.path.append(pythonpath)
+    myenv = sys.argv[4].strip(',')
+    print 'Environments before export'
+    print sys.path
+    export(myenv)
+    #pythonpath = myenv.split('=')[1]
+    #sys.path.append(pythonpath)
+    print 'Environments after export'
+    print sys.path
+

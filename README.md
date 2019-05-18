@@ -21,11 +21,9 @@ You can ignore 'PAR.USER_DEFINE_STATION' if you use a fixed receiver array in sy
 
 5. Add script to create mask model and plot misfit curves
 
+6. Add matlab scripts to convert SEGY data to SU format for SeisFlows. And Output geometry files
+
 Unsolved problem:
 1. Use GPU version SPECFEM2D in SeisFlows
 2. Tikhonov regularization
 
-Need to do:
-1. Convert real data (SAC or SEGY) to SU format that SeisFlows can use.
-	step 1 -- convert segy data to SU format
-	step 2 -- read geometry information from segy data and save it to SOURCE and STATIONS file

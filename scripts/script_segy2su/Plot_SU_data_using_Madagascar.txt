@@ -1,0 +1,5 @@
+1. suoldtonew < Uz_file_single.su > Uz_new.su
+2. segyhdrs < Uz_new.su
+3. segywrite < Uz_new.su tape=Uz.sgy endian=0
+4. sfsegyread < Uz.sgy > Uz.rsf
+5. sfgrey < Uz.rsf | sfpen &

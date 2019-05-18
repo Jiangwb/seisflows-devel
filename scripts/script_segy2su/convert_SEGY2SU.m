@@ -1,10 +1,10 @@
 %% Read SEGY data and convert it to SU format for SeisFlows
 clear; close all; clc;
 %% read seismic data
-%filename_input_segy='./Alfonsine_offset1200.sgy';
-%shot_num = 2162; % shot number
-filename_input_segy='002.segy';
-shot_num=1;
+filename_input_segy='./Alfonsine_offset1200.sgy';
+shot_num = 2162; % shot number
+%filename_input_segy='002.segy';
+%shot_num=1;
 trace_num = 96; % trace number per shot
 dt=4; % unit=ms 
 %%
@@ -43,9 +43,15 @@ for itrace=1:N
 end
 trace_num_pershot(shot_num)=N-sum(trace_num_pershot(1:shot_num-1)); % last shot
 %% read one shot once a time
+% Output geometry file
+if ~exist('./geometry_files','dir')==0
+	rmdir('./geometry_files','s');
+end
+mkdir('./geometry_files');
+
 tmp=1;
 %for ishot=1:shot_num
-for ishot=1:1
+for ishot=1:10
     disp(ishot);
     [Data,SegyTraceHeader,SegyHeader] = ReadSegy(filename_input_segy,'traces',[tmp:tmp+trace_num_pershot(ishot)-1]);
     tmp=tmp+trace_num_pershot(ishot);
@@ -89,20 +95,8 @@ for ishot=1:1
     
     % Output as SU format
     filepath=['./obs/',num2str(ishot,'%06d'),'/'];
-    if ~exist(filepath) 
-        mkdir(filepath)         
-    else
-        rmdir(filepath,'s')
-        mkdir(filepath) 
-    end 
     WriteSuStructure([filepath,'Uz_file_single.su'],SegyTraceHeader,Data,SegyHeader);
     
-    % Output geometry file
-    if ~exist('./geometry_files','dir')==0
-        rmdir('./geometry_files','s');
-    end
-
-    mkdir('./geometry_files');
     % Output SOURCE file
     filename = sprintf('./geometry_files/SOURCE_%06i',ishot-1);
     fid=fopen(filename,'w');

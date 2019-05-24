@@ -23,6 +23,8 @@ You can ignore 'PAR.USER_DEFINE_STATION' if you use a fixed receiver array in sy
 
 6. Add matlab scripts to convert SEGY data to SU format for SeisFlows. And Output geometry files
 
+7. Add scripts to generate simple specfem2d binary model
+
 After step 4&6, SeisFlows can be used for real data.
 
 Unsolved problem:

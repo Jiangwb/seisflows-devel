@@ -1,0 +1,35 @@
+ #
+ # number of interfaces
+ #
+  3
+ #
+ # for each interface below, we give the number of points and then x,z for each point
+ #
+ #
+ # interface number 1 (bottom of the mesh)
+ #
+  2
+   0.00000000       0.00000000    
+   4000.00000       0.00000000    
+ #
+ # interface number 2 (topography, top of the mesh)
+ #
+  2
+   0.00000000       1500.00000    
+   4000.00000       1500.00000    
+#
+ # interface number 2 (topography, top of the mesh)
+ #
+  2
+   0.00000000       3000.00000    
+   4000.00000       3000.00000    
+ #
+ # for each layer, we give the number of spectral elements in the vertical direction
+ #
+ #
+ # layer number 2 (bottom layer)
+ #
+         75
+ # layer number 1 (bottom layer)
+ #
+         75

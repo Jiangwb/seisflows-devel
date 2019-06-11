@@ -30,7 +30,7 @@ class double_difference(custom_import('preprocess', 'base')):
             setattr(PAR, 'DISTMAX', float("inf"))
 
         if not hasattr(PAR, 'UNITS'):
-            setattr(PAR, 'UNITS', 'lonlat')
+            setattr(PAR, 'UNITS', 'cartesian')
 
         if not hasattr(PATH, 'WEIGHTS'):
             setattr(PATH, 'WEIGHTS', None)
@@ -85,23 +85,41 @@ class double_difference(custom_import('preprocess', 'base')):
         if PATH.WEIGHTS:
             rsd *= self.load_weights()
 
+        ## original
+		## write residuals to text file
+        #filename = path +'/'+ 'residuals'
+        #if exists(filename):
+		#	rsdlist = list(np.loadtxt(filename))
+        #else:
+        #    rsdlist = []
+        #rsdlist += [rsd]
+        #np.savetxt(filename, rsdlist)
+
+        ## Jiang change
         # write residuals to text file
+        rsdlist = []
         filename = path +'/'+ 'residuals'
         if exists(filename):
-            rsdlist = list(np.loadtxt(filename))
+			rsdlist = list(np.loadtxt(filename))
         else:
             rsdlist = []
-        rsdlist += [rsd]
+        #print 'stage1-rsdlist'
+        #print rsdlist
+        #print 'stage1-rsd'
+        #print rsd
+        #rsdlist += [rsd]
+        rsdlist.extend(rsd)
+        #print 'stage2'
+        #print rsdlist
         np.savetxt(filename, rsdlist)
 
-
-    def sum_residuals(self):
-        """ Sums squares of residuals
-        """
-        total_misfit = 0.
-        for path in paths:
-            total_misfit += np.sum(np.loadtxt(path)**2.)
-        return total_misfit
+    #def sum_residuals(self):
+    #    """ Sums squares of residuals
+    #    """
+    #    total_misfit = 0.
+    #    for path in paths:
+    #        total_misfit += np.sum(np.loadtxt(path)**2.)
+    #    return total_misfit
 
 
     def write_adjoint_traces(self, path, syn, dat, channel):
@@ -177,6 +195,11 @@ class double_difference(custom_import('preprocess', 'base')):
     def shift(self, v, it):
         """ Shifts time series a given number of steps
         """
+        #print 'it='
+        #print it
+		# Jiang change
+        it=int(it)
+        #print it
         if it == 0:
             return v
 

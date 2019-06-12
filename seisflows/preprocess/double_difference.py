@@ -42,6 +42,33 @@ class double_difference(custom_import('preprocess', 'base')):
             'Traveltime',
             'TraveltimeInexact']
 
+    def prepare_eval_grad(self, path='.'):
+        """
+         Prepares solver for gradient evaluation by writing residuals and
+         adjoint traces
+
+         :input path: directory containing observed and synthetic seismic data
+        """
+        solver = sys.modules['seisflows_solver']
+
+        for filename in solver.data_filenames:
+            obs = self.reader(path+'/'+'traces/obs', filename)
+            syn = self.reader(path+'/'+'traces/syn', filename)
+
+            # process observations
+            obs = self.apply_filter(obs)
+            obs = self.apply_mute(obs)
+            obs = self.apply_normalize(obs)
+
+            # process synthetics
+            syn = self.apply_filter(syn)
+            syn = self.apply_mute(syn)
+            syn = self.apply_normalize(syn)
+
+            if PAR.MISFIT:
+                self.write_residuals(path, syn, obs)
+            self.write_adjoint_traces(path+'/'+'traces/adj', syn, obs, filename)
+
 
     def write_residuals(self, path, syn, dat):
         """ Computes residuals from observations and synthetics
@@ -155,6 +182,7 @@ class double_difference(custom_import('preprocess', 'base')):
 
         # write adjoint traces
         self.writer(adj, path, channel)
+        #print(path+'/'+channel)
 
 
     def adjoint_dd(self, si, sj, t0, nt, dt):

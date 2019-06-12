@@ -58,8 +58,8 @@ class base_mbpf(custom_import('preprocess','base')):
                 freq_min = PAR.FREQMIN4 
                 freq_max = PAR.FREQMAX4
                 unix.mkdir(path+'/'+'traces/adj4')
-            print 'igroup='
-            print(igroup)
+            #print 'igroup='
+            #print(igroup)
             for filename in solver.data_filenames:
                 obs = self.reader(path+'/'+'traces/obs', filename)
                 syn = self.reader(path+'/'+'traces/syn', filename)
@@ -74,8 +74,9 @@ class base_mbpf(custom_import('preprocess','base')):
                 syn = self.apply_mute(syn)
                 syn = self.apply_normalize(syn)
 
-                if PAR.MISFIT:
-                    self.write_residuals(path, syn, obs)
+                if igroup==4:
+                    if PAR.MISFIT:
+                        self.write_residuals(path, syn, obs)
 
                 self.write_adjoint_traces(path+'/'+'traces/adj'+'%d'%igroup, syn, obs, filename)
                 ## calculate adjoint source here
@@ -102,6 +103,7 @@ class base_mbpf(custom_import('preprocess','base')):
         # output adj_sum
         for filename in solver.data_filenames:
             self.writer(adj_sum, path+'/'+'traces/adj', filename)
+        print 'Output adj_sum_end'
 
 
     def adj_filenames(self):

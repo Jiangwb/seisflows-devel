@@ -85,7 +85,11 @@ class double_difference(custom_import('preprocess', 'base')):
         # calculate distances between stations
         for i in range(nr):
             for j in range(i):
-                dist[i,j] = self.distance(rx[i], rx[j], ry[i], ry[j])
+                #dist[i,j] = self.distance(rx[i], rx[j], ry[i], ry[j]) # bug! all dist=0, but I do not know why
+                dist[i,j] = ((rx[i]-rx[j])**2+(ry[i]-ry[j])**2)**0.5
+                #print(PAR.UNITS)
+                #print('i j rx[i] rx[j] ry[i] ry[j] dist[i,j]')
+                #print("%d,%d,%f,%f,%f,%f,%f"%(i, j, rx[i], rx[j], ry[i], ry[j], dist[i,j]))
 
         # calculate traveltime lags between stations pairs
         for i in range(nr):
@@ -243,15 +247,15 @@ class double_difference(custom_import('preprocess', 'base')):
 
 
     def distance(self, x1, y1, x2, y2):
-        if PAR.UNITS in ['lonlat']:
-            dlat = np.radians(y2-y1)
-            dlon = np.radians(x2-x1)
-            a = np.sin(dlat/2) * np.sin(dlat/2) + np.cos(np.radians(y1)) \
-                * np.cos(np.radians(y2)) * np.sin(dlon/2) * np.sin(dlon/2)
-            D = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
-            D *= 180/np.pi
-            return D
+        #if PAR.UNITS in ['lonlat']:
+        #    dlat = np.radians(y2-y1)
+        #    dlon = np.radians(x2-x1)
+        #    a = np.sin(dlat/2) * np.sin(dlat/2) + np.cos(np.radians(y1)) \
+        #        * np.cos(np.radians(y2)) * np.sin(dlon/2) * np.sin(dlon/2)
+        #    D = 2 * np.arctan2(np.sqrt(a), np.sqrt(1-a))
+        #    D *= 180/np.pi
+        #    return D
 
-        else:
+        #else:
             return ((x1-x2)**2 + (y1-y2)**2)**0.5
 

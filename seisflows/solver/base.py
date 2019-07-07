@@ -566,7 +566,7 @@ class base(object):
             raise Exception
 
         # apply wildcard rule
-        wildcard = self.source_prefix+'_*'
+        wildcard = self.source_prefix +'_*'
         globstar = sorted(glob(path +'/'+ wildcard))
         if not globstar:
              print msg.SourceError_SPECFEM % (path, wildcard)

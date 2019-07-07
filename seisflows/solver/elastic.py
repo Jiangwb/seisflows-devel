@@ -14,8 +14,12 @@ from seisflows.config import ParameterError, custom_import
 PAR = sys.modules['seisflows_parameters']
 PATH = sys.modules['seisflows_paths']
 
-
-class elastic(object):
+#######original#######
+#class elastic(object):
+#######original#######
+#######Jiang change start#######
+class elastic(custom_import('solver','specfem2d')):
+#######Jiang change end#######
     """ Adds elastic inversion machinery
     """
     if PAR.MATERIALS == 'phi_beta':
@@ -37,6 +41,9 @@ class elastic(object):
         kernel_parameters = []
         kernel_parameters += ['kappa']
         kernel_parameters += ['mu']
+        parameters = []
+        parameters += ['kappa']
+        parameters += ['mu']
 
     elif PAR.MATERIALS == 'lambda_mu':
         from seisflows.plugins.materials import lambda_mu_forward as map_forward
@@ -69,7 +76,12 @@ class elastic(object):
         from seisflows.plugins.materials import rho_gardner as density_scaling
 
 
-    def load(self, path, prefix='', suffix='', verbose=True):
+#######original#######
+#    def load(self, path, prefix='', suffix='', verbose=True):
+#######original#######
+#######Jiang change start#######
+    def load(self, path, parameters=[], prefix='', suffix='', verbose=True):
+#######Jiang change end#######
         """ reads SPECFEM model or kernels
         """
         logpath = PATH.SUBMIT
@@ -119,12 +131,19 @@ class elastic(object):
             return model
 
 
-    def save(self, path, obj, prefix='', suffix=''):
+#######original#######
+#    def save(self, path, obj, prefix='', suffix=''):
+#######original#######
+#######Jiang change start#######
+    def save(self, obj, path, parameters=['vp','vs','rho'], prefix='', suffix=''):
+#######Jiang change end#######
+        print 'path', path
         unix.mkdir(path)
         model_init = join(PATH.OUTPUT, 'model_init')
 
         if 'kernel' in suffix:
             kernels = obj
+            print 'kernels', kernels
             # write kernels
             for iproc in range(self.mesh_properties.nproc):
                 keys = kernels.keys()
@@ -139,6 +158,7 @@ class elastic(object):
         else:
             # write model
             model = obj
+            #print 'model', model
             for iproc in range(self.mesh_properties.nproc):
                 keys = model.keys()
                 vals = []

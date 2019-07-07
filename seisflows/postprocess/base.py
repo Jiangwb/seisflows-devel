@@ -57,6 +57,8 @@ class base(object):
                  path=path+'/kernels',
                  parameters=solver.parameters)
 
+        #print 'parameters', solver.parameters
+
         gradient = solver.load(
             path+'/'+'kernels/sum',
             parameters=solver.parameters,

@@ -137,13 +137,13 @@ class elastic(custom_import('solver','specfem2d')):
 #######Jiang change start#######
     def save(self, obj, path, parameters=['vp','vs','rho'], prefix='', suffix=''):
 #######Jiang change end#######
-        print 'path', path
+        #print 'path', path
         unix.mkdir(path)
         model_init = join(PATH.OUTPUT, 'model_init')
 
         if 'kernel' in suffix:
             kernels = obj
-            print 'kernels', kernels
+            #print 'kernels', kernels
             # write kernels
             for iproc in range(self.mesh_properties.nproc):
                 keys = kernels.keys()

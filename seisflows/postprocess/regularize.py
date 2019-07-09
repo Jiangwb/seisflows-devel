@@ -58,7 +58,7 @@ class regularize(custom_import('postprocess', 'base')):
                 g[key][iproc] += PAR.LAMBDA *\
                     self.nabla(mesh, m[key][iproc], g[key][iproc])
 
-        self.save(path, solver.merge(g), backup='noregularize')
+        #self.save(path, solver.merge(g), backup='noregularize')
 
 
     def process_kernels(self, path, parameters):
@@ -70,8 +70,8 @@ class regularize(custom_import('postprocess', 'base')):
         if exists(fullpath +'/'+ 'sum'):
             unix.mv(fullpath +'/'+ 'sum', fullpath +'/'+ 'sum_nofix')
 
-        #print('==========path==========')
-        #print(path)
+        print('==========in process_kernels, path==========')
+        print(path)
         # mask sources and receivers
         system.run('postprocess', 'fix_near_field', 
                    #hosts='all', 
@@ -100,12 +100,12 @@ class regularize(custom_import('postprocess', 'base')):
 
         #name = solver.check_source_names()[solver.taskid]
         name = self.get_source_names()[solver.taskid]
-        print('==========name==========')
+        print('==========in fix_near_field, name==========')
         print(name)
-        print('==========path==========')
+        print('==========in fix_near_field, path==========')
         print(path)
         fullpath = path +'/'+ name
-        print('==========fullpath==========')
+        print('==========in fix_near_field, fullpath==========')
         print(fullpath)
         g = solver.load(fullpath, suffix='_kernel')
         if not PAR.FIXRADIUS:
@@ -144,17 +144,18 @@ class regularize(custom_import('postprocess', 'base')):
             g[key][0] += mask*weight
         print('==========stage 4==========')
 
-        ## It is dangerous to mask receivers because the number of receiver may not be a fix number
+        ## It is dangerous to mask receivers because the number of receiver may not be a fix number, and it is too slow
 		## mask receivers
-        #for ir in range(PAR.NREC):
-        #    mask = np.exp(-0.5*((x-rx[ir])**2.+(z-ry[ir])**2.)/sigma**2.)
-        #    for key in solver.parameters:
-        #        weight = np.sum(mask*g[key][0])/np.sum(mask)
-        #        g[key][0] *= 1.-mask
-        #        g[key][0] += mask*weight
+        for ir in range(PAR.NREC):
+            mask = np.exp(-0.5*((x-rx[ir])**2.+(z-ry[ir])**2.)/sigma**2.)
+            for key in solver.parameters:
+                weight = np.sum(mask*g[key][0])/np.sum(mask)
+                g[key][0] *= 1.-mask
+                g[key][0] += mask*weight
 
-        solver.save(fullpath, g, suffix='_kernel')
-        print('==========fix_near_field end==========')
+        #solver.save(fullpath, g, suffix='_kernel')
+        solver.save(g, fullpath, suffix='_kernel')
+        print('==========in fix_near_field, end==========')
 
 
     def nabla(self, mesh, m, g):

@@ -49,10 +49,12 @@ class select_window(custom_import('preprocess','base')):
         """
         solver = sys.modules['seisflows_solver']
 
+        icount_window_number=0
+        icount_total_window_number=0
+        #print('==========================================')
         for iwindow in range(PAR.WINDOW_NUMBER):
             unix.mkdir(path+'/'+'traces/adj'+'%d'%iwindow)
-            print('==========================================')
-            print('iwindow', iwindow)
+            #print('iwindow', iwindow)
             for filename in solver.data_filenames:
                 obs = self.reader(path+'/'+'traces/obs', filename)
                 syn = self.reader(path+'/'+'traces/syn', filename)
@@ -69,17 +71,26 @@ class select_window(custom_import('preprocess','base')):
                 nr, _ = self.get_network_size(syn)
                 for ir in range(nr):
                     max_cc_value,cc_shift,dlnA=self._calc_criteria(obs[ir].data[:],syn[ir].data[:])
-                    if ir==0:
-                        print('max_cc_value, cc_acceptance_level', max_cc_value, PAR.CC_ACCEPTANCE_LEVEL)
-                        print('cc_shift, tshift_acceptance_level', cc_shift, PAR.TSHIFT_ACCEPTANCE_LEVEL)
-                        print('dlnA, dlna_acceptance_level', dlnA, PAR.DLNA_ACCEPTANCE_LEVEL)
-                        print('==========================================')
+                    #if ir==0:
+                    #    print('max_cc_value, cc_acceptance_level', max_cc_value, PAR.CC_ACCEPTANCE_LEVEL)
+                    #    print('cc_shift, tshift_acceptance_level', cc_shift, PAR.TSHIFT_ACCEPTANCE_LEVEL)
+                    #    print('dlnA, dlna_acceptance_level', dlnA, PAR.DLNA_ACCEPTANCE_LEVEL)
+                    #    print('==========================================')
                     #if (cc_shift>=1.0/(PAR.F0*PAR.DT*2) or dlnA>=2 or max_cc_value<=0.80):
-                    if (cc_shift>=PAR.TSHIFT_ACCEPTANCE_LEVEL or dlnA>=PAR.DLNA_ACCEPTANCE_LEVEL or max_cc_value<=PAR.CC_ACCEPTANCE_LEVEL):
+                    # windows - reject
+                    if (abs(cc_shift)>=PAR.TSHIFT_ACCEPTANCE_LEVEL or dlnA>=PAR.DLNA_ACCEPTANCE_LEVEL or max_cc_value<=PAR.CC_ACCEPTANCE_LEVEL):
                         obs[ir].data[:]=0.0
                         syn[ir].data[:]=0.0
+                    # calculate how many windows in the inversion
+                    if (abs(dlnA)>0.0):
+                        icount_total_window_number=icount_total_window_number+1
+                    # calculate how many windows are used in the inversion
+                    if (abs(cc_shift)<PAR.TSHIFT_ACCEPTANCE_LEVEL and dlnA<PAR.DLNA_ACCEPTANCE_LEVEL and max_cc_value>PAR.CC_ACCEPTANCE_LEVEL):
+                        icount_window_number=icount_window_number+1
                 ############# compare obs and syn to reject window ##############
                 self.write_adjoint_traces(path+'/'+'traces/adj'+'%d'%iwindow, syn, obs, filename)
+        print('window used in the inversion, total window number', icount_window_number, icount_total_window_number)
+        #print('==========================================')
 
         if PAR.MISFIT:
             obs = self.reader(path+'/'+'traces/obs', filename)
@@ -116,7 +127,7 @@ class select_window(custom_import('preprocess','base')):
         # output adj_sum
         for filename in solver.data_filenames:
             self.writer(adj_sum, path+'/'+'traces/adj', filename)
-        print 'Output adj_sum_end'
+        #print 'Output adj_sum_end'
 
 
     def adj_filenames(self):
@@ -162,8 +173,8 @@ class select_window(custom_import('preprocess','base')):
         slope  = 0.0
         const1 = iwindow * window_length * dt 
         const2 = (iwindow+1) * window_length * dt
-        print('const1',const1)	
-        print('const2',const2)
+        #print('const1',const1)	
+        #print('const2',const2)
     
         for ir in range(nr):
     

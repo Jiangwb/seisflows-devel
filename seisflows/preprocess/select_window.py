@@ -32,6 +32,12 @@ class select_window(custom_import('preprocess','base')):
             raise ParameterError(PAR, 'WINDOW_NUMBER')
         if 'WINDOW_LENGTH' not in PAR:
             raise ParameterError(PAR, 'WINDOW_LENGTH')
+        if 'TSHIFT_ACCEPTANCE_LEVEL' not in PAR:
+            raise ParameterError(PAR, 'TSHIFT_ACCEPTANCE_LEVEL')
+        if 'DLNA_ACCEPTANCE_LEVEL' not in PAR:
+            raise ParameterError(PAR, 'DLNA_ACCEPTANCE_LEVEL')
+        if 'CC_ACCEPTANCE_LEVEL' not in PAR:
+            raise ParameterError(PAR, 'CC_ACCEPTANCE_LEVEL')
 
 
     def prepare_eval_grad(self, path='.'):
@@ -64,12 +70,12 @@ class select_window(custom_import('preprocess','base')):
                 for ir in range(nr):
                     max_cc_value,cc_shift,dlnA=self._calc_criteria(obs[ir].data[:],syn[ir].data[:])
                     if ir==0:
-                        print('max_cc_value', max_cc_value)
-                        print('cc_shift', cc_shift)
-                        print('dlnA', dlnA)
-                        print('1.0/(PAR.F0*PAR.DT*2)', 1.0/(PAR.F0*PAR.DT*2))
+                        print('max_cc_value, cc_acceptance_level', max_cc_value, PAR.CC_ACCEPTANCE_LEVEL)
+                        print('cc_shift, tshift_acceptance_level', cc_shift, PAR.TSHIFT_ACCEPTANCE_LEVEL)
+                        print('dlnA, dlna_acceptance_level', dlnA, PAR.DLNA_ACCEPTANCE_LEVEL)
                         print('==========================================')
-                    if (cc_shift>=1.0/(PAR.F0*PAR.DT*2) or dlnA>=2 or max_cc_value<=0.80):
+                    #if (cc_shift>=1.0/(PAR.F0*PAR.DT*2) or dlnA>=2 or max_cc_value<=0.80):
+                    if (cc_shift>=PAR.TSHIFT_ACCEPTANCE_LEVEL or dlnA>=PAR.DLNA_ACCEPTANCE_LEVEL or max_cc_value<=PAR.CC_ACCEPTANCE_LEVEL):
                         obs[ir].data[:]=0.0
                         syn[ir].data[:]=0.0
                 ############# compare obs and syn to reject window ##############
@@ -78,6 +84,15 @@ class select_window(custom_import('preprocess','base')):
         if PAR.MISFIT:
             obs = self.reader(path+'/'+'traces/obs', filename)
             syn = self.reader(path+'/'+'traces/syn', filename)
+            # process observations to calculate misfit
+            obs = self.apply_filter(obs)
+            obs = self.apply_mute(obs)
+            obs = self.apply_normalize(obs)
+            # process synthetics to calculate misfit
+            syn = self.apply_filter(syn)
+            syn = self.apply_mute(syn)
+            syn = self.apply_normalize(syn)
+
             self.write_residuals(path, syn, obs)
 
         adj_sum = syn

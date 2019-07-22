@@ -40,6 +40,98 @@ class select_window(custom_import('preprocess','base')):
             raise ParameterError(PAR, 'CC_ACCEPTANCE_LEVEL')
 
 
+############################################## original #######################################
+#    def prepare_eval_grad(self, path='.'):
+#        """
+#         Prepares solver for gradient evaluation by writing residuals and
+#         adjoint traces
+#
+#         :input path: directory containing observed and synthetic seismic data
+#        """
+#        solver = sys.modules['seisflows_solver']
+#
+#        icount_window_number=0
+#        icount_total_window_number=0
+#        #print('==========================================')
+#        for iwindow in range(PAR.WINDOW_NUMBER):
+#            unix.mkdir(path+'/'+'traces/adj'+'%d'%iwindow)
+#            #print('iwindow', iwindow)
+#            for filename in solver.data_filenames:
+#                obs = self.reader(path+'/'+'traces/obs', filename)
+#                syn = self.reader(path+'/'+'traces/syn', filename)
+#
+#                # process observations
+#                obs = self.apply_filter(obs)
+#                obs = self.apply_mute_select_window(obs,iwindow,PAR.WINDOW_LENGTH)
+#
+#                # process synthetics
+#                syn = self.apply_filter(syn)
+#                syn = self.apply_mute_select_window(syn,iwindow,PAR.WINDOW_LENGTH)
+#
+#                ############# compare obs and syn to reject window ##############
+#                nr, _ = self.get_network_size(syn)
+#                for ir in range(nr):
+#                    max_cc_value,cc_shift,dlnA=self._calc_criteria(obs[ir].data[:],syn[ir].data[:])
+#                    #if ir==0:
+#                    #    print('max_cc_value, cc_acceptance_level', max_cc_value, PAR.CC_ACCEPTANCE_LEVEL)
+#                    #    print('cc_shift, tshift_acceptance_level', cc_shift, PAR.TSHIFT_ACCEPTANCE_LEVEL)
+#                    #    print('dlnA, dlna_acceptance_level', dlnA, PAR.DLNA_ACCEPTANCE_LEVEL)
+#                    #    print('==========================================')
+#                    #if (cc_shift>=1.0/(PAR.F0*PAR.DT*2) or dlnA>=2 or max_cc_value<=0.80):
+#                    # windows - reject
+#                    if (abs(cc_shift)>=PAR.TSHIFT_ACCEPTANCE_LEVEL or dlnA>=PAR.DLNA_ACCEPTANCE_LEVEL or max_cc_value<=PAR.CC_ACCEPTANCE_LEVEL):
+#                        obs[ir].data[:]=0.0
+#                        syn[ir].data[:]=0.0
+#                    # calculate how many windows in the inversion
+#                    if (abs(dlnA)>0.0):
+#                        icount_total_window_number=icount_total_window_number+1
+#                    # calculate how many windows are used in the inversion
+#                    if (abs(cc_shift)<PAR.TSHIFT_ACCEPTANCE_LEVEL and dlnA<PAR.DLNA_ACCEPTANCE_LEVEL and max_cc_value>PAR.CC_ACCEPTANCE_LEVEL):
+#                        icount_window_number=icount_window_number+1
+#                ############# compare obs and syn to reject window ##############
+#                self.write_adjoint_traces(path+'/'+'traces/adj'+'%d'%iwindow, syn, obs, filename)
+#        print('window used in the inversion, total window number', icount_window_number, icount_total_window_number)
+#        #print('==========================================')
+#
+#        if PAR.MISFIT:
+#            obs = self.reader(path+'/'+'traces/obs', filename)
+#            syn = self.reader(path+'/'+'traces/syn', filename)
+#            # process observations to calculate misfit
+#            obs = self.apply_filter(obs)
+#            obs = self.apply_mute(obs)
+#            obs = self.apply_normalize(obs)
+#            # process synthetics to calculate misfit
+#            syn = self.apply_filter(syn)
+#            syn = self.apply_mute(syn)
+#            syn = self.apply_normalize(syn)
+#
+#            self.write_residuals(path, syn, obs)
+#
+#        adj_sum = syn
+#        nr, _ = self.get_network_size(syn)
+#        for ir in range(nr):
+#            adj_sum[ir].data[:] = 0.0
+#
+#        for iwindow in range(PAR.WINDOW_NUMBER):
+#            #print 'SUMMATION, iwindow='
+#            #print(iwindow)
+#            for filename in solver.data_filenames:
+#            #for filename in self.adj_filenames:
+#                adj = self.reader(path+'/'+'traces/adj'+'%d'%iwindow, filename)
+#                for ir in range(nr):
+#                    adj_sum[ir].data = adj_sum[ir].data + adj[ir].data
+#
+#        # mute adj_sum if necessary
+#        adj_sum = self.apply_mute(adj_sum)
+#        adj_sum = self.apply_normalize(adj_sum)
+#
+#        # output adj_sum
+#        for filename in solver.data_filenames:
+#            self.writer(adj_sum, path+'/'+'traces/adj', filename)
+#        #print 'Output adj_sum_end'
+############################################## original #######################################
+
+############################################# jiang change to speed up #######################################
     def prepare_eval_grad(self, path='.'):
         """
          Prepares solver for gradient evaluation by writing residuals and
@@ -51,20 +143,30 @@ class select_window(custom_import('preprocess','base')):
 
         icount_window_number=0
         icount_total_window_number=0
-        #print('==========================================')
+        print('==================filter start========================')
+        unix.mkdir(path+'/'+'traces/obs_filter')
+        unix.mkdir(path+'/'+'traces/syn_filter')
+        # process observations and synthetics
+        for filename in solver.data_filenames:
+            obs = self.reader(path+'/'+'traces/obs', filename)
+            obs = self.apply_filter(obs)
+            self.writer(obs, path+'/'+'traces/obs_filter', filename)
+            syn = self.reader(path+'/'+'traces/syn', filename)
+            syn = self.apply_filter(syn)
+            self.writer(syn, path+'/'+'traces/syn_filter', filename)
+        print('==================filter end========================')
+
         for iwindow in range(PAR.WINDOW_NUMBER):
             unix.mkdir(path+'/'+'traces/adj'+'%d'%iwindow)
             #print('iwindow', iwindow)
             for filename in solver.data_filenames:
-                obs = self.reader(path+'/'+'traces/obs', filename)
-                syn = self.reader(path+'/'+'traces/syn', filename)
+                obs = self.reader(path+'/'+'traces/obs_filter', filename)
+                syn = self.reader(path+'/'+'traces/syn_filter', filename)
 
                 # process observations
-                obs = self.apply_filter(obs)
                 obs = self.apply_mute_select_window(obs,iwindow,PAR.WINDOW_LENGTH)
 
                 # process synthetics
-                syn = self.apply_filter(syn)
                 syn = self.apply_mute_select_window(syn,iwindow,PAR.WINDOW_LENGTH)
 
                 ############# compare obs and syn to reject window ##############
@@ -96,11 +198,9 @@ class select_window(custom_import('preprocess','base')):
             obs = self.reader(path+'/'+'traces/obs', filename)
             syn = self.reader(path+'/'+'traces/syn', filename)
             # process observations to calculate misfit
-            obs = self.apply_filter(obs)
             obs = self.apply_mute(obs)
             obs = self.apply_normalize(obs)
             # process synthetics to calculate misfit
-            syn = self.apply_filter(syn)
             syn = self.apply_mute(syn)
             syn = self.apply_normalize(syn)
 
@@ -128,7 +228,7 @@ class select_window(custom_import('preprocess','base')):
         for filename in solver.data_filenames:
             self.writer(adj_sum, path+'/'+'traces/adj', filename)
         #print 'Output adj_sum_end'
-
+############################################# jiang change to speed up #######################################
 
     def adj_filenames(self):
         if PAR.CHANNELS:

@@ -74,9 +74,9 @@ class base_mbpf(custom_import('preprocess','base')):
                 syn = self.apply_mute(syn)
                 syn = self.apply_normalize(syn)
 
-                if igroup==4:
-                    if PAR.MISFIT:
-                        self.write_residuals(path, syn, obs)
+                #if igroup==4:
+                #    if PAR.MISFIT:
+                #        self.write_residuals(path, syn, obs)
 
                 self.write_adjoint_traces(path+'/'+'traces/adj'+'%d'%igroup, syn, obs, filename)
                 ## calculate adjoint source here
@@ -85,6 +85,18 @@ class base_mbpf(custom_import('preprocess','base')):
                 ##adj = syn
                 #for ii in range(nr):
                 #    adj[igroup,ii].data = self.adjoint(syn[ii].data, obs[ii].data, nt, dt)
+
+        if PAR.MISFIT:
+            obs = self.reader(path+'/'+'traces/obs', filename)
+            syn = self.reader(path+'/'+'traces/syn', filename)
+            # process observations to calculate misfit
+            obs = self.apply_mute(obs)
+            obs = self.apply_normalize(obs)
+            # process synthetics to calculate misfit
+            syn = self.apply_mute(syn)
+            syn = self.apply_normalize(syn)
+
+            self.write_residuals(path, syn, obs)
 
         adj_sum = syn
         nr, _ = self.get_network_size(syn)
